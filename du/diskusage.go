@@ -10,11 +10,15 @@ type DiskUsage struct {
 
 // Returns an object holding the disk usage of volumePath
 // This function assumes volumePath is a valid path
-func NewDiskUsage(volumePath string) *DiskUsage {
+func NewDiskUsage(volumePath string) (dusage *DiskUsage, err error) {
 
 	var stat syscall.Statfs_t
-	syscall.Statfs(volumePath, &stat)
-	return &DiskUsage{&stat}
+	err = syscall.Statfs(volumePath, &stat)
+	if err != nil {
+		return
+	}
+	dusage = &DiskUsage{&stat}
+	return
 }
 
 // Total free bytes on file system
@@ -22,7 +26,7 @@ func (this *DiskUsage) Free() uint64 {
 	return this.stat.Bfree * uint64(this.stat.Bsize)
 }
 
-// Total available bytes on file system to an unpriveleged user
+// Total available bytes on file system to an unprivileged user
 func (this *DiskUsage) Available() uint64 {
 	return this.stat.Bavail * uint64(this.stat.Bsize)
 }
